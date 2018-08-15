@@ -1,2 +1,2 @@
 # cyberRenderer
-> A 3D rendering service created using C++, GLFW, and modern OpenGL 3.3.
+> A 3D rendering service created using C++, GLFW, and modern OpenGL 3.3. This provides a wrapper around OpenGL calls, as well as some higher level methods for creating renderable objects.
