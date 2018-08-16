@@ -66,10 +66,13 @@ class IRenderer
         virtual void loadEmptyTextureImage(const unsigned int & width, const unsigned int & height) = 0;
         virtual void unbindVAO() = 0;
         virtual void unbindArrayBuffer() = 0;
+        virtual void unbindTexture() = 0;
         virtual void drawArrays(const GLuint & vao, const int & first, const int & count) = 0;
         virtual void drawArraysTriangleFan(const GLuint & vao, const int & first, const int & count) = 0;
         virtual void setMinTextureFiltering(const GLint & filter) = 0;
         virtual void setMagTextureFiltering(const GLint & filter) = 0;
+        virtual void setTextureWrapping(const GLint & wrapS, const GLint & wrapT) = 0;
+        virtual void setTextureWrapping(const GLint & wrap) = 0;
         virtual GLuint createShaderProgram(const char * vertexShaderSource, const char * fragmentShaderSource) = 0;
         virtual GLuint createShaderProgramFromFiles(const char * vertexShaderFilename, const char * fragmentShaderFilename) = 0;
         virtual GLuint createRect(const GLfloat & width, const GLfloat & height, const glm::vec3 & color) = 0;
@@ -104,12 +107,16 @@ class Renderer : public IRenderer
 
         void unbindVAO();
         void unbindArrayBuffer();
+        void unbindTexture();
 
         void drawArrays(const GLuint & vao, const int & first, const int & count);
         void drawArraysTriangleFan(const GLuint & vao, const int & first, const int & count);
 
         void setMinTextureFiltering(const GLint & filter);
         void setMagTextureFiltering(const GLint & filter);
+
+        void setTextureWrapping(const GLint & wrapS, const GLint & wrapT);
+        void setTextureWrapping(const GLint & wrap);
 
         // High level methods
         GLuint createShaderProgram(const char * vertexShaderSource, const char * fragmentShaderSource);
@@ -143,10 +150,13 @@ class NullRenderer : public IRenderer
         void loadEmptyTextureImage(const unsigned int & width, const unsigned int & height) { }
         void unbindVAO() { }
         void unbindArrayBuffer() { }
+        void unbindTexture() { }
         void drawArrays(const GLuint & vao, const int & first, const int & count) { }
         void drawArraysTriangleFan(const GLuint & vao, const int & first, const int & count) { }
         void setMinTextureFiltering(const GLint & filter) { }
         void setMagTextureFiltering(const GLint & filter) { }
+        void setTextureWrapping(const GLint & wrapS, const GLint & wrapT) { }
+        void setTextureWrapping(const GLint & wrap) { }
         GLuint createShaderProgram(const char * vertexShaderSource, const char * fragmentShaderSource) { return 0; }
         GLuint createShaderProgramFromFiles(const char * vertexShaderFilename, const char * fragmentShaderFilename) { return 0; }
         GLuint createRect(const GLfloat & width, const GLfloat & height, const glm::vec3 & color) { return 0; }

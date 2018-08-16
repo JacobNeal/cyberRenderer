@@ -49,8 +49,13 @@ Renderer::~Renderer()
     for (GLuint & texture : m_textureList)
         glDeleteTextures(1, &texture);
 
+    for (GLuint & frameBuffer : m_frameBufferList)
+        glDeleteFrameBuffers(1, &frameBuffer);
+
     m_vaoList.clear();
     m_vboList.clear();
+    m_textureList.clear();
+    m_frameBufferList.clear();
 }
 
 //////////////////////////////////////////////////////////////
@@ -153,6 +158,12 @@ void Renderer::unbindArrayBuffer()
 }
 
 //////////////////////////////////////////////////////////////
+void Renderer::unbindTexture()
+{
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+//////////////////////////////////////////////////////////////
 void Renderer::drawArrays(const GLuint & vao, const int & first, const int & count)
 {
     glBindVertexArray(vao);
@@ -178,6 +189,20 @@ void Renderer::setMinTextureFiltering(const GLint & filter)
 void Renderer::setMagTextureFiltering(const GLint & filter)
 {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+}
+
+//////////////////////////////////////////////////////////////
+void Renderer::setTextureWrapping(const GLint & wrapS, const GLint & wrapT)
+{
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
+}
+
+//////////////////////////////////////////////////////////////
+void Renderer::setTextureWrapping(const GLint & wrap)
+{
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
 }
 
 //////////////////////////////////////////////////////////////
