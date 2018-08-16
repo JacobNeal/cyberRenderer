@@ -50,7 +50,7 @@ Renderer::~Renderer()
         glDeleteTextures(1, &texture);
 
     for (GLuint & frameBuffer : m_frameBufferList)
-        glDeleteFrameBuffers(1, &frameBuffer);
+        glDeleteFramebuffers(1, &frameBuffer);
 
     m_vaoList.clear();
     m_vboList.clear();
@@ -161,6 +161,20 @@ void Renderer::unbindArrayBuffer()
 void Renderer::unbindTexture()
 {
     glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+//////////////////////////////////////////////////////////////
+void Renderer::setActiveTexture(const GLuint & textureHandle, const GLenum & texture)
+{
+    glActiveTexture(texture);
+    glBindTexture(GL_TEXTURE_2D, textureHandle);
+}
+
+//////////////////////////////////////////////////////////////
+void Renderer::setTextureSampler(const GLuint & shaderProgram, const char * uniformName)
+{
+    GLint uniformLocation = glGetUniformLocation(shaderProgram, uniformName);
+    glUniform1i(uniformLocation, 0);
 }
 
 //////////////////////////////////////////////////////////////

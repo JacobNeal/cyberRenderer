@@ -67,6 +67,8 @@ class IRenderer
         virtual void unbindVAO() = 0;
         virtual void unbindArrayBuffer() = 0;
         virtual void unbindTexture() = 0;
+        virtual void setActiveTexture(const GLuint & textureHandle, const GLenum & texture=GL_TEXTURE0) = 0;
+        virtual void setTextureSampler(const GLuint & shaderProgram, const char * uniformName) = 0;
         virtual void drawArrays(const GLuint & vao, const int & first, const int & count) = 0;
         virtual void drawArraysTriangleFan(const GLuint & vao, const int & first, const int & count) = 0;
         virtual void setMinTextureFiltering(const GLint & filter) = 0;
@@ -108,6 +110,9 @@ class Renderer : public IRenderer
         void unbindVAO();
         void unbindArrayBuffer();
         void unbindTexture();
+
+        void setActiveTexture(const GLuint & textureHandle, const GLenum & texture=GL_TEXTURE0);
+        void setTextureSampler(const GLuint & shaderProgram, const char * uniformName);
 
         void drawArrays(const GLuint & vao, const int & first, const int & count);
         void drawArraysTriangleFan(const GLuint & vao, const int & first, const int & count);
@@ -151,6 +156,8 @@ class NullRenderer : public IRenderer
         void unbindVAO() { }
         void unbindArrayBuffer() { }
         void unbindTexture() { }
+        void setActiveTexture(const GLuint & textureHandle, const GLenum & texture=GL_TEXTURE0) { }
+        void setTextureSampler(const GLuint & shaderProgram, const char * uniformName) { }
         void drawArrays(const GLuint & vao, const int & first, const int & count) { }
         void drawArraysTriangleFan(const GLuint & vao, const int & first, const int & count) { }
         void setMinTextureFiltering(const GLint & filter) { }
