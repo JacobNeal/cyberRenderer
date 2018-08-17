@@ -10,27 +10,7 @@ int main()
     ce::IRenderer * renderer = new ce::Renderer;
     ce::RendererLocator::provide(renderer);
 
-    const char * vertexShader = 
-        "#version 330 core\n"
-        "layout (location=0) in vec3 inPos;\n"
-        "layout (location=1) in vec3 inColor;\n"
-        "out vec3 fragColor;\n"
-        "void main()\n"
-        "{\n"
-        "    gl_Position = vec4(inPos, 1.0);\n"
-        "    fragColor = inColor;\n"
-        "}\0";
-
-    const char * fragmentShader = 
-        "#version 330 core\n"
-        "in vec3 fragColor;\n"
-        "out vec4 FragColor;\n"
-        "void main()\n"
-        "{\n"
-        "    FragColor = vec4(fragColor, 1.0);\n"
-        "}\0";
-
-    GLuint shader = renderer->createShaderProgram(vertexShader, fragmentShader);
+    GLuint shader = renderer->createShaderProgramFromFiles("../resources/shaders/shape/vertex.glsl", "../resources/shaders/shape/fragment.glsl");
     GLuint vao = renderer->createRect(glm::vec2(-0.5f, -0.5f), glm::vec2(0.5f, 0.5f), glm::vec3(1.0f, 0.0f, 0.0f));
 
     while (!window.isDone())
