@@ -220,6 +220,13 @@ void Renderer::setTextureWrapping(const GLint & wrap)
 }
 
 //////////////////////////////////////////////////////////////
+void Renderer::passUniformMatrix(const GLuint & shaderProgram, const char * uniformName, const glm::mat4 & uniformMatrix, const bool & normalize)
+{
+    GLint uniformLocation = glGetUniformLocation(shaderProgram, uniformName);
+    glUniformMatrix4fv(uniformLocation, 1, normalize ? GL_TRUE : GL_FALSE, glm::value_ptr(uniformMatrix));
+}
+
+//////////////////////////////////////////////////////////////
 GLuint Renderer::createShaderProgram(const char * vertexShaderSource, const char * fragmentShaderSource)
 {
     GLuint program;
@@ -395,6 +402,79 @@ GLuint Renderer::createOctagon(const glm::vec2 & tl, const glm::vec2 & br, const
 
     addVertexAttribute(3, false, 6 * sizeof(GLfloat), 0);
     addVertexAttribute(3, false, 6 * sizeof(GLfloat), 3 * sizeof(GLfloat));
+
+    unbindVAO();
+
+    m_vaoList.push_back(vao);
+    m_vboList.push_back(vbo);
+
+    return vao;
+}
+
+GLuint Renderer::createVoxel(const glm::vec3 & tl, const glm::vec3 & size, const glm::vec3 & color)
+{
+    // Voxel vertex data size:
+    //
+    // 9 floats * 3 vectors * 2 triangles * 6 sides = 324 floats
+    const GLfloat voxelData[] = {
+        // Back side
+        tl.x,          tl.y,          tl.z - size.z, color.r, color.g, color.b, 0.0f, 0.0f, -1.0f,
+        tl.x,          tl.y - size.y, tl.z - size.z, color.r, color.g, color.b, 0.0f, 0.0f, -1.0f,
+        tl.x + size.x, tl.y - size.y, tl.z - size.z, color.r, color.g, color.b, 0.0f, 0.0f, -1.0f,
+        tl.x + size.x, tl.y,          tl.z - size.z, color.r, color.g, color.b, 0.0f, 0.0f, -1.0f,
+        tl.x,          tl.y,          tl.z - size.z, color.r, color.g, color.b, 0.0f, 0.0f, -1.0f,
+        tl.x + size.x, tl.y - size.y, tl.z - size.z, color.r, color.g, color.b, 0.0f, 0.0f, -1.0f,
+
+        // Front side
+        tl.x,          tl.y,          tl.z, color.r, color.g, color.b, 0.0f, 0.0f, 1.0f,
+        tl.x,          tl.y - size.y, tl.z, color.r, color.g, color.b, 0.0f, 0.0f, 1.0f,
+        tl.x + size.x, tl.y - size.y, tl.z, color.r, color.g, color.b, 0.0f, 0.0f, 1.0f,
+        tl.x + size.x, tl.y,          tl.z, color.r, color.g, color.b, 0.0f, 0.0f, 1.0f,
+        tl.x,          tl.y,          tl.z, color.r, color.g, color.b, 0.0f, 0.0f, 1.0f,
+        tl.x + size.x, tl.y - size.y, tl.z, color.r, color.g, color.b, 0.0f, 0.0f, 1.0f,
+
+        // Left side
+        tl.x, tl.y,          tl.z,          color.r, color.g, color.b, -1.0f, 0.0f, 0.0f,
+        tl.x, tl.y - size.y, tl.z,          color.r, color.g, color.b, -1.0f, 0.0f, 0.0f,
+        tl.x, tl.y - size.y, tl.z - size.z, color.r, color.g, color.b, -1.0f, 0.0f, 0.0f,
+        tl.x, tl.y,          tl.z - size.z, color.r, color.g, color.b, -1.0f, 0.0f, 0.0f,
+        tl.x, tl.y,          tl.z,          color.r, color.g, color.b, -1.0f, 0.0f, 0.0f,
+        tl.x, tl.y - size.y, tl.z - size.z, color.r, color.g, color.b, -1.0f, 0.0f, 0.0f,
+
+        // Right side
+        tl.x + size.x, tl.y,          tl.z,          color.r, color.g, color.b, 1.0f, 0.0f, 0.0f,
+        tl.x + size.x, tl.y - size.y, tl.z,          color.r, color.g, color.b, 1.0f, 0.0f, 0.0f,
+        tl.x + size.x, tl.y - size.y, tl.z - size.z, color.r, color.g, color.b, 1.0f, 0.0f, 0.0f,
+        tl.x + size.x, tl.y,          tl.z - size.z, color.r, color.g, color.b, 1.0f, 0.0f, 0.0f,
+        tl.x + size.x, tl.y,          tl.z,          color.r, color.g, color.b, 1.0f, 0.0f, 0.0f,
+        tl.x + size.x, tl.y - size.y, tl.z - size.z, color.r, color.g, color.b, 1.0f, 0.0f, 0.0f,
+
+        // Top side
+        tl.x,          tl.y, tl.z,          color.r, color.g, color.b, 0.0f, 1.0f, 0.0f,
+        tl.x,          tl.y, tl.z - size.z, color.r, color.g, color.b, 0.0f, 1.0f, 0.0f,
+        tl.x + size.x, tl.y, tl.z - size.z, color.r, color.g, color.b, 0.0f, 1.0f, 0.0f,
+        tl.x + size.x, tl.y, tl.z,          color.r, color.g, color.b, 0.0f, 1.0f, 0.0f,
+        tl.x,          tl.y, tl.z,          color.r, color.g, color.b, 0.0f, 1.0f, 0.0f,
+        tl.x + size.x, tl.y, tl.z - size.z, color.r, color.g, color.b, 0.0f, 1.0f, 0.0f,
+
+        // Bottom side
+        tl.x,          tl.y - size.y, tl.z,          color.r, color.g, color.b, 0.0f, -1.0f, 0.0f,
+        tl.x,          tl.y - size.y, tl.z - size.z, color.r, color.g, color.b, 0.0f, -1.0f, 0.0f,
+        tl.x + size.x, tl.y - size.y, tl.z - size.z, color.r, color.g, color.b, 0.0f, -1.0f, 0.0f,
+        tl.x + size.x, tl.y - size.y, tl.z,          color.r, color.g, color.b, 0.0f, -1.0f, 0.0f,
+        tl.x,          tl.y - size.y, tl.z,          color.r, color.g, color.b, 0.0f, -1.0f, 0.0f,
+        tl.x + size.x, tl.y - size.y, tl.z - size.z, color.r, color.g, color.b, 0.0f, -1.0f, 0.0f,
+    };
+
+    GLuint vao = generateVAO();
+    GLuint vbo = generateVBO();
+
+    bindVAO(vao);
+    bindArrayBuffer(vbo, sizeof(voxelData), &voxelData[0]);
+
+    addVertexAttribute(3, false, 9 * sizeof(GLfloat), 0);
+    addVertexAttribute(3, false, 9 * sizeof(GLfloat), 3 * sizeof(GLfloat));
+    addVertexAttribute(3, false, 9 * sizeof(GLfloat), 6 * sizeof(GLfloat));
 
     unbindVAO();
 

@@ -35,6 +35,8 @@
 #include <iostream>
 #include "OpenGL.hpp"
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "Logger.hpp"
 #include "FileReader.hpp"
@@ -75,11 +77,13 @@ class IRenderer
         virtual void setMagTextureFiltering(const GLint & filter) = 0;
         virtual void setTextureWrapping(const GLint & wrapS, const GLint & wrapT) = 0;
         virtual void setTextureWrapping(const GLint & wrap) = 0;
+        virtual void passUniformMatrix(const GLuint & shaderProgram, const char * uniformName, const glm::mat4 & uniformMatrix, const bool & normalize=false) = 0;
         virtual GLuint createShaderProgram(const char * vertexShaderSource, const char * fragmentShaderSource) = 0;
         virtual GLuint createShaderProgramFromFiles(const char * vertexShaderFilename, const char * fragmentShaderFilename) = 0;
         virtual GLuint createRect(const GLfloat & width, const GLfloat & height, const glm::vec3 & color) = 0;
         virtual GLuint createRect(const glm::vec2 & tl, const glm::vec2 & br, const glm::vec3 & color) = 0;
         virtual GLuint createOctagon(const glm::vec2 & tl, const glm::vec2 & br, const glm::vec3 & color) = 0;
+        virtual GLuint createVoxel(const glm::vec3 & tl, const glm::vec3 & size, const glm::vec3 & color) = 0;
 };
 
 ////////////////////////////////////////////////////////////////
@@ -123,12 +127,15 @@ class Renderer : public IRenderer
         void setTextureWrapping(const GLint & wrapS, const GLint & wrapT);
         void setTextureWrapping(const GLint & wrap);
 
+        void passUniformMatrix(const GLuint & shaderProgram, const char * uniformName, const glm::mat4 & uniformMatrix, const bool & normalize=false);
+
         // High level methods
         GLuint createShaderProgram(const char * vertexShaderSource, const char * fragmentShaderSource);
         GLuint createShaderProgramFromFiles(const char * vertexShaderFilename, const char * fragmentShaderFilename);
         GLuint createRect(const GLfloat & width, const GLfloat & height, const glm::vec3 & color);
         GLuint createRect(const glm::vec2 & tl, const glm::vec2 & br, const glm::vec3 & color);
         GLuint createOctagon(const glm::vec2 & tl, const glm::vec2 & br, const glm::vec3 & color);
+        GLuint createVoxel(const glm::vec3 & tl, const glm::vec3 & size, const glm::vec3 & color);
 
     private:
         std::vector<GLuint> m_vaoList;
@@ -164,11 +171,13 @@ class NullRenderer : public IRenderer
         void setMagTextureFiltering(const GLint & filter) { }
         void setTextureWrapping(const GLint & wrapS, const GLint & wrapT) { }
         void setTextureWrapping(const GLint & wrap) { }
+        void passUniformMatrix(const GLuint & shaderProgram, const char * uniformName, const glm::mat4 & uniformMatrix, const bool & normalize=false) { }
         GLuint createShaderProgram(const char * vertexShaderSource, const char * fragmentShaderSource) { return 0; }
         GLuint createShaderProgramFromFiles(const char * vertexShaderFilename, const char * fragmentShaderFilename) { return 0; }
         GLuint createRect(const GLfloat & width, const GLfloat & height, const glm::vec3 & color) { return 0; }
         GLuint createRect(const glm::vec2 & tl, const glm::vec2 & br, const glm::vec3 & color) { return 0; }
         GLuint createOctagon(const glm::vec2 & tl, const glm::vec2 & br, const glm::vec3 & color) { return 0; }
+        GLuint createVoxel(const glm::vec3 & tl, const glm::vec3 & size, const glm::vec3 & color) { return 0; }
 };
 
 ////////////////////////////////////////////////////////////////
