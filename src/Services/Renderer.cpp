@@ -411,6 +411,7 @@ GLuint Renderer::createOctagon(const glm::vec2 & tl, const glm::vec2 & br, const
     return vao;
 }
 
+//////////////////////////////////////////////////////////////
 GLuint Renderer::createVoxel(const glm::vec3 & tl, const glm::vec3 & size, const glm::vec3 & color)
 {
     // Voxel vertex data size:
