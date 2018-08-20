@@ -27,6 +27,11 @@ int main()
                                               glm::vec3(red, green, blue));               // Color
     }
 
+    size_t meshVertexCount = 0;
+    GLuint meshTexture = 0;
+    GLuint meshVAO = renderer->createMesh("../resources/models/blacksmith/blacksmith.obj", meshTexture, meshVertexCount);
+    GLuint meshShader = renderer->createShaderProgramFromFiles("../resources/shaders/entity/vertex.glsl", "../resources/shaders/entity/fragment.glsl");
+
     glm::vec3 cameraPosition(0.0f, 0.0f, 0.0f);
 
     while (!window.isDone())
@@ -43,11 +48,27 @@ int main()
             glm::mat4 model(1.0f);
             model = glm::translate(model, glm::vec3(count * voxelSize, 160, 0));
             model = glm::rotate(model, (float)glm::radians(glfwGetTime() * 60), glm::vec3(1.0f, 1.0f, 1.0f));
+
             glm::mat4 mvp = projection * view * model;
 
             renderer->passUniformMatrix(voxelShader, "mvp", mvp);
             renderer->drawArrays(voxels[count], 0, 36);
         }
+
+        glUseProgram(meshShader);
+
+        glm::mat4 model(1.0f);
+        model = glm::translate(model, glm::vec3(200.0f, 240.0f, 0.0f));
+        model = glm::rotate(model, (float)glm::radians(glfwGetTime() * 60), glm::vec3(1.0f, 1.0f, 1.0f));
+
+        renderer->passUniformMatrix(meshShader, "model", model);
+        renderer->passUniformMatrix(meshShader, "view", view);
+        renderer->passUniformMatrix(meshShader, "projection", projection);
+
+        renderer->setActiveTexture(meshTexture);
+        renderer->setTextureSampler(meshShader, "text");
+
+        renderer->drawArrays(meshVAO, 0, meshVertexCount);
 
         GLenum err = glGetError();
         while((err = glGetError()) != GL_NO_ERROR) LOG("OpenGL Error: " + std::to_string(int(err)));

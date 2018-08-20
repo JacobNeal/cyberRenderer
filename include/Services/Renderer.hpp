@@ -38,8 +38,15 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <iterator>
+#include <algorithm>
+
 #include "Logger.hpp"
 #include "FileReader.hpp"
+#include "Image.hpp"
 
 namespace ce
 {
@@ -84,6 +91,7 @@ class IRenderer
         virtual GLuint createRect(const glm::vec2 & tl, const glm::vec2 & br, const glm::vec3 & color) = 0;
         virtual GLuint createOctagon(const glm::vec2 & tl, const glm::vec2 & br, const glm::vec3 & color) = 0;
         virtual GLuint createVoxel(const glm::vec3 & tl, const glm::vec3 & size, const glm::vec3 & color) = 0;
+        virtual GLuint createMesh(const std::string & filename, GLuint & texture, size_t & numVertices) = 0;
 };
 
 ////////////////////////////////////////////////////////////////
@@ -136,6 +144,7 @@ class Renderer : public IRenderer
         GLuint createRect(const glm::vec2 & tl, const glm::vec2 & br, const glm::vec3 & color);
         GLuint createOctagon(const glm::vec2 & tl, const glm::vec2 & br, const glm::vec3 & color);
         GLuint createVoxel(const glm::vec3 & tl, const glm::vec3 & size, const glm::vec3 & color);
+        GLuint createMesh(const std::string & filename, GLuint & texture, size_t & numVertices);
 
     private:
         std::vector<GLuint> m_vaoList;
@@ -178,6 +187,7 @@ class NullRenderer : public IRenderer
         GLuint createRect(const glm::vec2 & tl, const glm::vec2 & br, const glm::vec3 & color) { return 0; }
         GLuint createOctagon(const glm::vec2 & tl, const glm::vec2 & br, const glm::vec3 & color) { return 0; }
         GLuint createVoxel(const glm::vec3 & tl, const glm::vec3 & size, const glm::vec3 & color) { return 0; }
+        GLuint createMesh(const std::string & filename, GLuint & texture, size_t & numVertices) { return 0; }
 };
 
 ////////////////////////////////////////////////////////////////

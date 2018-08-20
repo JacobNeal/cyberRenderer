@@ -485,4 +485,168 @@ GLuint Renderer::createVoxel(const glm::vec3 & tl, const glm::vec3 & size, const
     return vao;
 }
 
+//////////////////////////////////////////////////////////////
+GLuint Renderer::createMesh(const std::string & filename, GLuint & texture, size_t & numVertices)
+{
+    std::ifstream file(filename);
+    std::vector<glm::vec3> vertexCoordinates;
+    std::vector<glm::vec3> normalCoordinates;
+    std::vector<glm::vec3> textureCoordinates;
+    std::string materialFilename = "";
+    std::string textureFilename = "";
+    std::vector<GLfloat> vertexData;
+
+    GLuint vao, vbo;
+
+    if (file.is_open())
+    {
+        std::string line;
+
+        while (std::getline(file, line))
+        {
+            std::istringstream buffer(line);
+
+            std::string type;
+            buffer >> type;
+
+            if (type == "v")
+            {
+                glm::vec3 coord;
+                buffer >> coord.x >> coord.y >> coord.z;
+
+                vertexCoordinates.push_back(coord);
+            }
+            else if (type == "vt")
+            {
+                glm::vec3 coord;
+                buffer >> coord.x >> coord.y;
+
+                textureCoordinates.push_back(coord);
+            }
+            else if (type == "vn")
+            {
+                glm::vec3 coord;
+                buffer >> coord.x >> coord.y >> coord.z;
+
+                normalCoordinates.push_back(coord);
+            }
+            else if (type == "f")
+            {
+                // 3 vertices per triangle face
+                for (int vertexCount = 0; vertexCount < 3; ++vertexCount)
+                {
+                    std::string vertex;
+                    buffer >> vertex;
+
+                    std::replace(vertex.begin(), vertex.end(), '/', ' ');
+
+                    std::vector<GLuint> faceVertexData;
+                    std::istringstream vertexBuffer(vertex);
+
+                    std::copy(std::istream_iterator<GLuint>(vertexBuffer),
+                                std::istream_iterator<GLuint>(),
+                                back_inserter(faceVertexData));
+
+                    if (faceVertexData.size() != 3)
+                    {
+                        LOG("ERROR: Face does not contain the expected 3 components for: v, vt, vn");
+                        break;
+                    }
+
+                    unsigned int vertexIndex  = faceVertexData[0] - 1;
+                    unsigned int textureIndex = faceVertexData[1] - 1;
+                    unsigned int normalIndex  = faceVertexData[2] - 1;
+
+                    vertexData.push_back(vertexCoordinates[vertexIndex].x);
+                    vertexData.push_back(vertexCoordinates[vertexIndex].y);
+                    vertexData.push_back(vertexCoordinates[vertexIndex].z);
+                    
+                    vertexData.push_back(textureCoordinates[textureIndex].x);
+                    vertexData.push_back(textureCoordinates[textureIndex].y);
+                    
+                    vertexData.push_back(normalCoordinates[normalIndex].x);
+                    vertexData.push_back(normalCoordinates[normalIndex].y);
+                    vertexData.push_back(normalCoordinates[normalIndex].z);
+                }
+            }
+            else if (type == "mtllib")
+            {
+                buffer >> materialFilename;
+            }
+        }
+
+        file.close();
+
+        if (materialFilename != "")
+        {
+            std::size_t endOfPath = filename.find_last_of("/") + 1;
+            std::string pathToModel = filename.substr(0, endOfPath);
+
+            std::ifstream materialFile(pathToModel + materialFilename);
+
+            if (materialFile.is_open())
+            {
+                std::string materialLine;
+
+                while (std::getline(materialFile, materialLine))
+                {
+                    std::istringstream materialBuffer(materialLine);
+                    std::string materialTemp;
+
+                    materialBuffer >> materialTemp;
+
+                    if (materialTemp == "map_Kd")
+                    {
+                        materialBuffer >> textureFilename;
+                    }
+                }
+                
+                materialFile.close();
+
+                //////////////////////////////////////////
+                // Load the texture PNG file
+                //////////////////////////////////////////
+                ce::Image image(pathToModel + textureFilename);
+
+                texture = generateTexture();
+
+                bindTexture(texture);
+                loadTextureImage(&image.getImageBuffer()[0], image.getWidth(), image.getHeight());
+
+                setTextureWrapping(GL_REPEAT);
+                setMinTextureFiltering(GL_NEAREST);
+                setMagTextureFiltering(GL_NEAREST);
+
+                unbindTexture();
+            }
+        }
+
+        LOG("Total number of vertices coordinates: " + std::to_string(vertexCoordinates.size()));
+        LOG("Total number of texture coordinates:  " + std::to_string(textureCoordinates.size()));
+        LOG("Total number of normal coordinates:   " + std::to_string(normalCoordinates.size()));
+        LOG("Total vertex data size: " + std::to_string(vertexData.size()));
+        LOG("Material texture: " + textureFilename);
+
+        numVertices = vertexData.size() / 8;
+
+        vao = generateVAO();
+        vbo = generateVBO();
+
+        bindVAO(vao);
+        bindArrayBuffer(vbo, vertexData.size() * sizeof(GLfloat), &vertexData[0]);
+
+        GLuint stride = 8 * sizeof(GLfloat);
+        addVertexAttribute(3, false, stride, 0);
+        addVertexAttribute(3, false, stride, 3 * sizeof(GLfloat));
+        addVertexAttribute(3, false, stride, 5 * sizeof(GLfloat));
+
+        unbindArrayBuffer();
+        unbindVAO();
+    }
+    else
+        LOG("ERROR: Could not open the .obj file: " + filename);
+
+    return vao;
+}
+
 } // namespace ce
