@@ -38,12 +38,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iterator>
-#include <algorithm>
-
 #include "Logger.hpp"
 #include "FileReader.hpp"
 #include "Image.hpp"

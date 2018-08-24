@@ -488,7 +488,10 @@ GLuint Renderer::createVoxel(const glm::vec3 & tl, const glm::vec3 & size, const
 //////////////////////////////////////////////////////////////
 GLuint Renderer::createMesh(const std::string & filename, GLuint & texture, size_t & numVertices)
 {
-    std::ifstream file(filename);
+    FileReader<char> fileReader;
+    char * meshData;
+    size_t meshSize;
+
     std::vector<glm::vec3> vertexCoordinates;
     std::vector<glm::vec3> normalCoordinates;
     std::vector<glm::vec3> textureCoordinates;
@@ -498,64 +501,60 @@ GLuint Renderer::createMesh(const std::string & filename, GLuint & texture, size
 
     GLuint vao, vbo;
 
-    if (file.is_open())
+    if (fileReader.read(filename.c_str(), &meshData, &meshSize))
     {
-        std::string line;
-
-        while (std::getline(file, line))
+        char * buffer = strtok(meshData, " ,/\n\0");
+        while (buffer != NULL)
         {
-            std::istringstream buffer(line);
-
-            std::string type;
-            buffer >> type;
-
-            if (type == "v")
+            glm::vec3 coord;
+            if (strcmp("v", buffer) == 0)
             {
-                glm::vec3 coord;
-                buffer >> coord.x >> coord.y >> coord.z;
+                buffer = strtok(NULL, " ,/\n\0");
+                coord.x = atof(buffer);
+
+                buffer = strtok(NULL, " ,/\n\0");
+                coord.y = atof(buffer);
+
+                buffer = strtok(NULL, " ,/\n\0");
+                coord.z = atof(buffer);
 
                 vertexCoordinates.push_back(coord);
             }
-            else if (type == "vt")
+            else if (strcmp("vt", buffer) == 0)
             {
-                glm::vec3 coord;
-                buffer >> coord.x >> coord.y;
+                buffer = strtok(NULL, " ,/\n\0");
+                coord.x = atof(buffer);
+
+                buffer = strtok(NULL, " ,/\n\0");
+                coord.y = atof(buffer);
 
                 textureCoordinates.push_back(coord);
             }
-            else if (type == "vn")
+            else if (strcmp("vn", buffer) == 0)
             {
-                glm::vec3 coord;
-                buffer >> coord.x >> coord.y >> coord.z;
+                buffer = strtok(NULL, " ,/\n\0");
+                coord.x = atof(buffer);
+
+                buffer = strtok(NULL, " ,/\n\0");
+                coord.y = atof(buffer);
+
+                buffer = strtok(NULL, " ,/\n\0");
+                coord.z = atof(buffer);
 
                 normalCoordinates.push_back(coord);
             }
-            else if (type == "f")
+            else if (strcmp("f", buffer) == 0)
             {
-                // 3 vertices per triangle face
-                for (int vertexCount = 0; vertexCount < 3; ++vertexCount)
+                for (unsigned int vertexCount = 0; vertexCount < 3; ++vertexCount)
                 {
-                    std::string vertex;
-                    buffer >> vertex;
+                    buffer = strtok(NULL, " ,/\n\0");
+                    int vertexIndex  = atoi(buffer) - 1;
 
-                    std::replace(vertex.begin(), vertex.end(), '/', ' ');
+                    buffer = strtok(NULL, " ,/\n\0");
+                    int textureIndex = atoi(buffer) - 1;
 
-                    std::vector<GLuint> faceVertexData;
-                    std::istringstream vertexBuffer(vertex);
-
-                    std::copy(std::istream_iterator<GLuint>(vertexBuffer),
-                                std::istream_iterator<GLuint>(),
-                                back_inserter(faceVertexData));
-
-                    if (faceVertexData.size() != 3)
-                    {
-                        LOG("ERROR: Face does not contain the expected 3 components for: v, vt, vn");
-                        break;
-                    }
-
-                    unsigned int vertexIndex  = faceVertexData[0] - 1;
-                    unsigned int textureIndex = faceVertexData[1] - 1;
-                    unsigned int normalIndex  = faceVertexData[2] - 1;
+                    buffer = strtok(NULL, " ,/\n\0");
+                    int normalIndex  = atoi(buffer) - 1;
 
                     vertexData.push_back(vertexCoordinates[vertexIndex].x);
                     vertexData.push_back(vertexCoordinates[vertexIndex].y);
@@ -569,71 +568,68 @@ GLuint Renderer::createMesh(const std::string & filename, GLuint & texture, size
                     vertexData.push_back(normalCoordinates[normalIndex].z);
                 }
             }
-            else if (type == "mtllib")
+            else if (strcmp("mtllib", buffer) == 0)
             {
-                buffer >> materialFilename;
+                buffer = strtok(NULL, " ,/\n\0");
+                materialFilename = std::string(buffer);
             }
+            buffer = strtok(NULL, " ,/\n\0");
         }
 
-        file.close();
+        delete [] meshData;
+    }
 
-        if (materialFilename != "")
+    if (materialFilename != "")
+    {
+        char * materialData;
+        size_t materialDataSize;
+        std::size_t endOfPath = filename.find_last_of("/") + 1;
+        std::string pathToModel = filename.substr(0, endOfPath);
+        materialFilename = pathToModel + materialFilename;
+
+        if (fileReader.read(materialFilename.c_str(), &materialData, &materialDataSize))
         {
-            std::size_t endOfPath = filename.find_last_of("/") + 1;
-            std::string pathToModel = filename.substr(0, endOfPath);
-
-            std::ifstream materialFile(pathToModel + materialFilename);
-
-            if (materialFile.is_open())
+            char * buffer = strtok(materialData, " ,/\n\0");
+            while (buffer != NULL)
             {
-                std::string materialLine;
-
-                while (std::getline(materialFile, materialLine))
+                if (strcmp("map_Kd", buffer) == 0)
                 {
-                    std::istringstream materialBuffer(materialLine);
-                    std::string materialTemp;
+                    buffer = strtok(NULL, " ,/\n\0");
+                    std::string textureFilename(buffer);
 
-                    materialBuffer >> materialTemp;
+                    //////////////////////////////////////////
+                    // Load the texture PNG file
+                    //////////////////////////////////////////
+                    ce::Image image(pathToModel + textureFilename);
 
-                    if (materialTemp == "map_Kd")
-                    {
-                        materialBuffer >> textureFilename;
-                    }
+                    texture = generateTexture();
+
+                    bindTexture(texture);
+                    loadTextureImage(&image.getImageBuffer()[0], image.getWidth(), image.getHeight());
+
+                    setTextureWrapping(GL_REPEAT);
+                    setMinTextureFiltering(GL_NEAREST);
+                    setMagTextureFiltering(GL_NEAREST);
+
+                    unbindTexture();
                 }
-                
-                materialFile.close();
 
-                //////////////////////////////////////////
-                // Load the texture PNG file
-                //////////////////////////////////////////
-                ce::Image image(pathToModel + textureFilename);
-
-                texture = generateTexture();
-
-                bindTexture(texture);
-                loadTextureImage(&image.getImageBuffer()[0], image.getWidth(), image.getHeight());
-
-                setTextureWrapping(GL_REPEAT);
-                setMinTextureFiltering(GL_NEAREST);
-                setMagTextureFiltering(GL_NEAREST);
-
-                unbindTexture();
+                buffer = strtok(NULL, " ,/\n\0");
             }
+
+            delete [] materialData;
         }
+    }
 
-        LOG("Total number of vertices coordinates: " + std::to_string(vertexCoordinates.size()));
-        LOG("Total number of texture coordinates:  " + std::to_string(textureCoordinates.size()));
-        LOG("Total number of normal coordinates:   " + std::to_string(normalCoordinates.size()));
-        LOG("Total vertex data size: " + std::to_string(vertexData.size()));
-        LOG("Material texture: " + textureFilename);
-
-        numVertices = vertexData.size() / 8;
-
+    size_t vertexDataSize = vertexData.size();
+    if (vertexDataSize > 0)
+    {
+        numVertices = vertexDataSize / 8;
         vao = generateVAO();
         vbo = generateVBO();
 
         bindVAO(vao);
-        bindArrayBuffer(vbo, vertexData.size() * sizeof(GLfloat), &vertexData[0]);
+        bindArrayBuffer(vbo, vertexDataSize * sizeof(GLfloat), &vertexData[0]);
 
         GLuint stride = 8 * sizeof(GLfloat);
         addVertexAttribute(3, false, stride, 0);
@@ -643,8 +639,6 @@ GLuint Renderer::createMesh(const std::string & filename, GLuint & texture, size
         unbindArrayBuffer();
         unbindVAO();
     }
-    else
-        LOG("ERROR: Could not open the .obj file: " + filename);
 
     return vao;
 }
