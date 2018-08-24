@@ -60,10 +60,12 @@ class IRenderer
         virtual GLuint generateVBO() = 0;
         virtual GLuint generateTexture() = 0;
         virtual GLuint generateFrameBuffer() = 0;
+        virtual GLuint generateRenderBuffer() = 0;
         virtual void bindVAO(const GLuint & vao) = 0;
         virtual void bindArrayBuffer(const GLuint & vbo, const unsigned int & vertexDataSize, const GLvoid * data, const bool & staticDraw=true) = 0;
         virtual void bindTexture(const GLuint & texture) = 0;
         virtual void bindFrameBuffer(const GLuint & frameBuffer) = 0;
+        virtual void bindRenderBuffer(const GLuint & renderBuffer) = 0;
         virtual void addVertexAttribute(const GLint & size, const bool & normalize, const int & stride, const int & offset) = 0;
         virtual void loadTextureImage(const unsigned char * textureData, const unsigned int & width, const unsigned int & height) = 0;
         virtual void loadEmptyTextureImage(const unsigned int & width, const unsigned int & height) = 0;
@@ -104,11 +106,13 @@ class Renderer : public IRenderer
         GLuint generateVBO();
         GLuint generateTexture();
         GLuint generateFrameBuffer();
+        GLuint generateRenderBuffer();
 
         void bindVAO(const GLuint & vao);
         void bindArrayBuffer(const GLuint & vbo, const unsigned int & vertexDataSize, const GLvoid * data, const bool & staticDraw=true);
         void bindTexture(const GLuint & texture);
         void bindFrameBuffer(const GLuint & framebuffer);
+        void bindRenderBuffer(const GLuint & renderBuffer);
         void addVertexAttribute(const GLint & size, const bool & normalize, const int & stride, const int & offset);
         void loadTextureImage(const unsigned char * textureData, const unsigned int & width, const unsigned int & height);
         void loadEmptyTextureImage(const unsigned int & width, const unsigned int & height);
@@ -145,6 +149,7 @@ class Renderer : public IRenderer
         std::vector<GLuint> m_vboList;
         std::vector<GLuint> m_textureList;
         std::vector<GLuint> m_frameBufferList;
+        std::vector<GLuint> m_renderBufferList;
 
         unsigned int m_vertexAttributeCount;
 };
@@ -156,10 +161,12 @@ class NullRenderer : public IRenderer
         GLuint generateVBO() { return 0; }
         GLuint generateTexture() { return 0; }
         GLuint generateFrameBuffer() { return 0; }
+        GLuint generateRenderBuffer() { return 0; }
         void bindVAO(const GLuint & vao) { }
         void bindArrayBuffer(const GLuint & vbo, const unsigned int & vertexDataSize, const GLvoid * data, const bool & staticDraw=true) { }
         void bindTexture(const GLuint & texture) { }
         void bindFrameBuffer(const GLuint & framebuffer) { }
+        void bindRenderBuffer(const GLuint & renderBuffer) { }
         void addVertexAttribute(const GLint & size, const bool & normalize, const int & stride, const int & offset) { }
         void loadTextureImage(const unsigned char * textureData, const unsigned int & width, const unsigned int & height) { }
         void loadEmptyTextureImage(const unsigned int & width, const unsigned int & height) { }

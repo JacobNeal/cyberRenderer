@@ -99,6 +99,16 @@ GLuint Renderer::generateFrameBuffer()
 }
 
 //////////////////////////////////////////////////////////////
+GLuint Renderer::generateRenderBuffer()
+{
+    GLuint renderBuffer;
+    glGenRenderbuffers(1, &renderBuffer);
+    m_renderBufferList.push_back(renderBuffer);
+
+    return renderBuffer;
+}
+
+//////////////////////////////////////////////////////////////
 void Renderer::bindVAO(const GLuint & vao)
 {
     glBindVertexArray(vao);
@@ -123,6 +133,12 @@ void Renderer::bindTexture(const GLuint & texture)
 void Renderer::bindFrameBuffer(const GLuint & framebuffer)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+}
+
+//////////////////////////////////////////////////////////////
+void Renderer::bindRenderBuffer(const GLuint & renderBuffer)
+{
+    glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
 }
 
 //////////////////////////////////////////////////////////////
