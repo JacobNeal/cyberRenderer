@@ -162,6 +162,18 @@ void Renderer::loadEmptyTextureImage(const unsigned int & width, const unsigned 
 }
 
 //////////////////////////////////////////////////////////////
+void Renderer::loadFrameBufferTexture(const GLuint & textureHandle, const GLenum & attachment, const GLint & mipMapLevel)
+{
+    glFramebufferTexture(GL_FRAMEBUFFER, attachment, textureHandle, mipMapLevel);
+}
+
+//////////////////////////////////////////////////////////////
+void Renderer::attachRenderBufferToFrameBuffer(const GLuint & renderBuffer, const GLenum & renderBufferTarget)
+{
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, renderBufferTarget, GL_RENDERBUFFER, renderBuffer);
+}
+
+//////////////////////////////////////////////////////////////
 void Renderer::unbindVAO()
 {
     glBindVertexArray(0);
@@ -191,6 +203,12 @@ void Renderer::setTextureSampler(const GLuint & shaderProgram, const char * unif
 {
     GLint uniformLocation = glGetUniformLocation(shaderProgram, uniformName);
     glUniform1i(uniformLocation, 0);
+}
+
+//////////////////////////////////////////////////////////////
+void Renderer::setRenderBufferStorage(const GLsizei & width, const GLsizei & height, const GLenum & internalFormat)
+{
+    glRenderbufferStorage(GL_RENDERBUFFER, internalFormat, width, height);
 }
 
 //////////////////////////////////////////////////////////////

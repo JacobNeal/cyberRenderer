@@ -69,6 +69,8 @@ class IRenderer
         virtual void addVertexAttribute(const GLint & size, const bool & normalize, const int & stride, const int & offset) = 0;
         virtual void loadTextureImage(const unsigned char * textureData, const unsigned int & width, const unsigned int & height) = 0;
         virtual void loadEmptyTextureImage(const unsigned int & width, const unsigned int & height) = 0;
+        virtual void loadFrameBufferTexture(const GLuint & textureHandle, const GLenum & attachment=GL_COLOR_ATTACHMENT0, const GLint & mipMapLevel=0) = 0;
+        virtual void attachRenderBufferToFrameBuffer(const GLuint & renderBuffer, const GLenum & renderBufferTarget=GL_DEPTH_ATTACHMENT) = 0;
         virtual void unbindVAO() = 0;
         virtual void unbindArrayBuffer() = 0;
         virtual void unbindTexture() = 0;
@@ -80,6 +82,7 @@ class IRenderer
         virtual void setMagTextureFiltering(const GLint & filter) = 0;
         virtual void setTextureWrapping(const GLint & wrapS, const GLint & wrapT) = 0;
         virtual void setTextureWrapping(const GLint & wrap) = 0;
+        virtual void setRenderBufferStorage(const GLsizei & width, const GLsizei & height, const GLenum & internalFormat=GL_DEPTH_COMPONENT) = 0;
         virtual void passUniformMatrix(const GLuint & shaderProgram, const char * uniformName, const glm::mat4 & uniformMatrix, const bool & normalize=false) = 0;
         virtual GLuint createShaderProgram(const char * vertexShaderSource, const char * fragmentShaderSource) = 0;
         virtual GLuint createShaderProgramFromFiles(const char * vertexShaderFilename, const char * fragmentShaderFilename) = 0;
@@ -116,6 +119,8 @@ class Renderer : public IRenderer
         void addVertexAttribute(const GLint & size, const bool & normalize, const int & stride, const int & offset);
         void loadTextureImage(const unsigned char * textureData, const unsigned int & width, const unsigned int & height);
         void loadEmptyTextureImage(const unsigned int & width, const unsigned int & height);
+        void loadFrameBufferTexture(const GLuint & textureHandle, const GLenum & attachment=GL_COLOR_ATTACHMENT0, const GLint & mipMapLevel=0);
+        void attachRenderBufferToFrameBuffer(const GLuint & renderBuffer, const GLenum & renderBufferTarget=GL_DEPTH_ATTACHMENT);
 
         void unbindVAO();
         void unbindArrayBuffer();
@@ -132,6 +137,8 @@ class Renderer : public IRenderer
 
         void setTextureWrapping(const GLint & wrapS, const GLint & wrapT);
         void setTextureWrapping(const GLint & wrap);
+
+        void setRenderBufferStorage(const GLsizei & width, const GLsizei & height, const GLenum & internalFormat=GL_DEPTH_COMPONENT);
 
         void passUniformMatrix(const GLuint & shaderProgram, const char * uniformName, const glm::mat4 & uniformMatrix, const bool & normalize=false);
 
@@ -170,6 +177,8 @@ class NullRenderer : public IRenderer
         void addVertexAttribute(const GLint & size, const bool & normalize, const int & stride, const int & offset) { }
         void loadTextureImage(const unsigned char * textureData, const unsigned int & width, const unsigned int & height) { }
         void loadEmptyTextureImage(const unsigned int & width, const unsigned int & height) { }
+        void loadFrameBufferTexture(const GLuint & textureHandle, const GLenum & attachment=GL_COLOR_ATTACHMENT0, const GLint & mipMapLevel=0) { }
+        void attachRenderBufferToFrameBuffer(const GLuint & renderBuffer, const GLenum & renderBufferTarget=GL_DEPTH_ATTACHMENT) { }
         void unbindVAO() { }
         void unbindArrayBuffer() { }
         void unbindTexture() { }
@@ -181,6 +190,7 @@ class NullRenderer : public IRenderer
         void setMagTextureFiltering(const GLint & filter) { }
         void setTextureWrapping(const GLint & wrapS, const GLint & wrapT) { }
         void setTextureWrapping(const GLint & wrap) { }
+        void setRenderBufferStorage(const GLsizei & width, const GLsizei & height, const GLenum & internalFormat=GL_DEPTH_COMPONENT) { }
         void passUniformMatrix(const GLuint & shaderProgram, const char * uniformName, const glm::mat4 & uniformMatrix, const bool & normalize=false) { }
         GLuint createShaderProgram(const char * vertexShaderSource, const char * fragmentShaderSource) { return 0; }
         GLuint createShaderProgramFromFiles(const char * vertexShaderFilename, const char * fragmentShaderFilename) { return 0; }
