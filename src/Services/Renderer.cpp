@@ -162,12 +162,6 @@ void Renderer::loadEmptyTextureImage(const unsigned int & width, const unsigned 
 }
 
 //////////////////////////////////////////////////////////////
-void Renderer::loadFrameBufferTexture(const GLuint & textureHandle, const GLenum & attachment, const GLint & mipMapLevel)
-{
-    glFramebufferTexture(GL_FRAMEBUFFER, attachment, textureHandle, mipMapLevel);
-}
-
-//////////////////////////////////////////////////////////////
 void Renderer::attachRenderBufferToFrameBuffer(const GLuint & renderBuffer, const GLenum & renderBufferTarget)
 {
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, renderBufferTarget, GL_RENDERBUFFER, renderBuffer);
@@ -212,6 +206,12 @@ void Renderer::setRenderBufferStorage(const GLsizei & width, const GLsizei & hei
 }
 
 //////////////////////////////////////////////////////////////
+void Renderer::setFrameBufferTexture(const GLuint & textureHandle, const GLenum & attachment, const GLint & mipMapLevel)
+{
+    glFramebufferTexture(GL_FRAMEBUFFER, attachment, textureHandle, mipMapLevel);
+}
+
+//////////////////////////////////////////////////////////////
 void Renderer::drawArrays(const GLuint & vao, const int & first, const int & count)
 {
     glBindVertexArray(vao);
@@ -225,6 +225,16 @@ void Renderer::drawArraysTriangleFan(const GLuint & vao, const int & first, cons
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLE_FAN, first, count);
     glBindVertexArray(0);
+}
+
+//////////////////////////////////////////////////////////////
+void Renderer::setColorDrawBuffer()
+{
+    GLenum drawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+    glDrawBuffers(1, drawBuffers);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        LOG("A problem occurred while setting up the framebuffer.");
 }
 
 //////////////////////////////////////////////////////////////
