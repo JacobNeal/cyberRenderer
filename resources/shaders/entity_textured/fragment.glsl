@@ -1,12 +1,10 @@
 #version 330 core
 
-layout (location=0) out vec3 color;
-
 in vec2 fragTexCoord;
 in vec3 fragNormal;
 in vec3 fragPosition;
 
-out vec4 FragColor;
+layout (location=0) out vec3 color;
 
 uniform sampler2D text;
 uniform vec3 lightColor;
@@ -39,5 +37,5 @@ void main()
     //             vec4(specular, 1.0)) * 
     //            texture(text, fragTexCoord);
 
-    FragColor = texture(text, fragTexCoord);
+    color = texture(text, fragTexCoord).xyz;
 }

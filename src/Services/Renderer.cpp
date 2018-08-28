@@ -52,10 +52,14 @@ Renderer::~Renderer()
     for (GLuint & frameBuffer : m_frameBufferList)
         glDeleteFramebuffers(1, &frameBuffer);
 
+    for (GLuint & renderBuffer : m_renderBufferList)
+        glDeleteRenderbuffers(1, &renderBuffer);
+
     m_vaoList.clear();
     m_vboList.clear();
     m_textureList.clear();
     m_frameBufferList.clear();
+    m_renderBufferList.clear();
 }
 
 //////////////////////////////////////////////////////////////
