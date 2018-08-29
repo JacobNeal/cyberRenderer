@@ -32,45 +32,14 @@ int main()
     GLuint meshVAO = renderer->createMesh("../resources/models/blacksmith/blacksmith.obj", meshTexture, meshVertexCount);
     GLuint meshShader = renderer->createShaderProgramFromFiles("../resources/shaders/entity_textured/vertex.glsl", "../resources/shaders/entity_textured/fragment.glsl");
 
-    GLuint frameBuffer = renderer->generateFrameBuffer();
-    renderer->bindFrameBuffer(frameBuffer);
+    size_t nanosuitVertexCount = 0;
+    GLuint nanosuitTexture = 0;
+    GLuint nanosuitVAO = renderer->createMesh("../resources/models/nanosuit/nanosuit.obj", nanosuitTexture, nanosuitVertexCount);
 
-    GLuint renderedTexture = renderer->generateTexture();
-    renderer->bindTexture(renderedTexture);
-
-    renderer->loadEmptyTextureImage(800, 640);
-
-    renderer->setMagTextureFiltering(GL_NEAREST);
-    renderer->setMinTextureFiltering(GL_NEAREST);
-    renderer->setTextureWrapping(GL_CLAMP_TO_EDGE);
-
-    GLuint depthRenderBuffer = renderer->generateRenderBuffer();
-    renderer->bindRenderBuffer(depthRenderBuffer);
-
-    renderer->setRenderBufferStorage(800, 640);
-    renderer->attachRenderBufferToFrameBuffer(depthRenderBuffer);
-
-    renderer->setFrameBufferTexture(renderedTexture);
-    renderer->setColorDrawBuffer();
-
-    GLuint quadVAO = renderer->generateVAO();
-    GLuint quadVBO = renderer->generateVBO();
+    GLuint quadVAO = 0;
+    GLuint renderedTexture = 0;
+    GLuint frameBuffer = renderer->createFrameBuffer(800, 640, renderedTexture, quadVAO);
     GLuint quadShader = renderer->createShaderProgramFromFiles("../resources/shaders/texture/vertex.glsl", "../resources/shaders/texture/fragment.glsl");
-
-
-    static const GLfloat quadVertexData[] = {
-        -1.0f, -1.0f, 0.0f,
-        1.0f, -1.0f, 0.0f,
-        -1.0f,  1.0f, 0.0f,
-        -1.0f,  1.0f, 0.0f,
-        1.0f, -1.0f, 0.0f,
-        1.0f,  1.0f, 0.0f,
-    };
-
-    renderer->bindVAO(quadVAO);
-    renderer->bindArrayBuffer(quadVBO, sizeof(quadVertexData), quadVertexData);
-
-    renderer->addVertexAttribute(3, false, 0, 0);
 
     glm::vec3 cameraPosition(0.0f, 0.0f, 0.0f);
 
@@ -81,6 +50,10 @@ int main()
         glm::mat4 view       = glm::lookAt(cameraPosition, cameraPosition + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         glm::mat4 projection = glm::ortho(0.0f, 400.0f, 0.0f, 320.0f, -100.0f, 100.0f);
 
+        // Render to the framebuffer
+        renderer->bindFrameBuffer(frameBuffer);
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUseProgram(voxelShader);
 
         for (unsigned int count = 0; count < numVoxels; ++count)
@@ -95,11 +68,6 @@ int main()
             renderer->drawArrays(voxels[count], 0, 36);
         }
 
-        // Render to the framebuffer
-        renderer->bindFrameBuffer(frameBuffer);
-        glViewport(0, 0, 800, 640);
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUseProgram(meshShader);
 
         glm::mat4 model(1.0f);
@@ -115,9 +83,16 @@ int main()
 
         renderer->drawArrays(meshVAO, 0, meshVertexCount);
 
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(200.0f, 40.0f, 0.0f));
+        model = glm::rotate(model, (float)glm::radians(glfwGetTime() * 60), glm::vec3(1.0f, 1.0f, 1.0f));
+        model = glm::scale(model, glm::vec3(4.0f, 4.0f, 4.0f));
+
+        renderer->passUniformMatrix(meshShader, "model", model);
+        renderer->drawArrays(nanosuitVAO, 0, nanosuitVertexCount);
+
         // Render to the screen
         renderer->bindFrameBuffer(0);
-        glViewport(0, 0, 800, 640);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUseProgram(quadShader);
@@ -126,6 +101,9 @@ int main()
         renderer->setTextureSampler(quadShader, "text");
 
         renderer->drawArrays(quadVAO, 0, 6);
+
+        renderer->bindFrameBuffer(0);
+        renderer->unbindVAO();
 
         GLenum err = glGetError();
         while((err = glGetError()) != GL_NO_ERROR) LOG("OpenGL Error: " + std::to_string(int(err)));

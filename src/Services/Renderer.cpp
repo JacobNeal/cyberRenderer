@@ -691,4 +691,51 @@ GLuint Renderer::createMesh(const std::string & filename, GLuint & texture, size
     return vao;
 }
 
+//////////////////////////////////////////////////////////////
+GLuint Renderer::createFrameBuffer(const GLsizei & width, const GLsizei & height, GLuint & renderedTexture, GLuint & quadVAO)
+{
+    GLuint frameBuffer = generateFrameBuffer();
+    bindFrameBuffer(frameBuffer);
+
+    renderedTexture = generateTexture();
+    bindTexture(renderedTexture);
+
+    loadEmptyTextureImage(width, height);
+
+    setMagTextureFiltering(GL_NEAREST);
+    setMinTextureFiltering(GL_NEAREST);
+    setTextureWrapping(GL_CLAMP_TO_EDGE);
+
+    GLuint depthRenderBuffer = generateRenderBuffer();
+    bindRenderBuffer(depthRenderBuffer);
+
+    setRenderBufferStorage(width, height);
+    attachRenderBufferToFrameBuffer(depthRenderBuffer);
+
+    setFrameBufferTexture(renderedTexture);
+    setColorDrawBuffer();
+
+    quadVAO = generateVAO();
+    GLuint quadVBO = generateVBO();
+
+    static const GLfloat quadVertexData[] = {
+        -1.0f, -1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        1.0f,  1.0f, 0.0f,
+    };
+
+    bindVAO(quadVAO);
+    bindArrayBuffer(quadVBO, sizeof(quadVertexData), quadVertexData);
+
+    addVertexAttribute(3, false, 0, 0);
+
+    bindFrameBuffer(0);
+    unbindVAO();
+
+    return frameBuffer;
+}
+
 } // namespace ce

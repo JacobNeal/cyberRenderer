@@ -92,6 +92,7 @@ class IRenderer
         virtual GLuint createOctagon(const glm::vec2 & tl, const glm::vec2 & br, const glm::vec3 & color) = 0;
         virtual GLuint createVoxel(const glm::vec3 & tl, const glm::vec3 & size, const glm::vec3 & color) = 0;
         virtual GLuint createMesh(const std::string & filename, GLuint & texture, size_t & numVertices) = 0;
+        virtual GLuint createFrameBuffer(const GLsizei & width, const GLsizei & height, GLuint & renderedTexture, GLuint & quadVAO) = 0;
 };
 
 ////////////////////////////////////////////////////////////////
@@ -153,6 +154,7 @@ class Renderer : public IRenderer
         GLuint createOctagon(const glm::vec2 & tl, const glm::vec2 & br, const glm::vec3 & color);
         GLuint createVoxel(const glm::vec3 & tl, const glm::vec3 & size, const glm::vec3 & color);
         GLuint createMesh(const std::string & filename, GLuint & texture, size_t & numVertices);
+        GLuint createFrameBuffer(const GLsizei & width, const GLsizei & height, GLuint & renderedTexture, GLuint & quadVAO);
 
     private:
         std::vector<GLuint> m_vaoList;
@@ -203,6 +205,7 @@ class NullRenderer : public IRenderer
         GLuint createOctagon(const glm::vec2 & tl, const glm::vec2 & br, const glm::vec3 & color) { return 0; }
         GLuint createVoxel(const glm::vec3 & tl, const glm::vec3 & size, const glm::vec3 & color) { return 0; }
         GLuint createMesh(const std::string & filename, GLuint & texture, size_t & numVertices) { return 0; }
+        GLuint createFrameBuffer(const GLsizei & width, const GLsizei & height, GLuint & renderedTexture, GLuint & quadVAO) { return 0; }
 };
 
 ////////////////////////////////////////////////////////////////
